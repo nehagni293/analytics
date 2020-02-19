@@ -109,5 +109,30 @@ trunc(x)
 #csv - comma separted values
 write.csv(students, 'data/students.csv', row.names= F)
 
-df1 = read.csv('data/students.csv')
+df1 = read.csv('data/students.csv') #from any subfolder
 df1 #df will always have a row & col name; matrix need not
+
+(df2 = read.csv('https://raw.githubusercontent.com/DUanalytics/rAnalytics/master/data/students.csv')) #from internet
+
+df3 = read.csv(file.choose()) #from system
+df3
+
+students
+
+#deploy a package - install only once, use anytime
+#install.packages("dplyr")
+library(dplyr) #loads library
+
+class(students)
+summary(students)
+str(students)
+(students = data.frame(rollno, name, age, gender, grade, stringsAsFactors = F)) #factor is a category
+students$gender = factor(students$gender)
+str(students)
+students$grade = factor(students$grade, ordered=T, levels=c('Sat','Good','Ex')) #factor should be ordered
+str(students)
+table(students$grade)
+
+students %>% group_by(gender) %>% tally()
+students %>% group_by(gender) %>% summarise(mean(age), n(), min(marks), max(marks))
+students %>% group_by(gender,grade) %>% summarise(mean(age))
