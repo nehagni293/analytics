@@ -1,5 +1,5 @@
 #IIMLN
-#Day1
+#Day1:19Feb2020
 
 mtcars
 ?mtcars #help on mtcars
@@ -136,3 +136,112 @@ table(students$grade)
 students %>% group_by(gender) %>% tally()
 students %>% group_by(gender) %>% summarise(mean(age), n(), min(marks), max(marks))
 students %>% group_by(gender,grade) %>% summarise(mean(age))
+
+#Day2:21Feb2020----
+#count the no. of particular cyl
+mtcars
+mtcars %>% group_by(cyl) %>% tally()
+table(mtcars$cyl)
+mtcars %>% group_by(cyl) %>% summarise(count = n())
+xtabs(~cyl, data=mtcars)
+ftable(mtcars$cyl)
+?xtabs
+#gear & cyl
+mtcars %>% group_by(cyl,gear) %>% tally()
+table(mtcars$cyl, mtcars$gear, dnn=c('cylinder','gear'))
+mtcars %>% group_by(cyl,gear) %>% summarise(count = n())
+xtabs(~cyl +gear, data=mtcars)
+ftable(mtcars$cyl, mtcars$gear)
+?mtcars
+table(mtcars$cyl, mtcars$gear, mtcars$am, dnn=c('cylinder','gear', 'AutoManual'))
+
+df=mtcars
+head(df) #first 6 col
+tail(df) #last 6 col
+df$am = ifelse(df$am==0,'Auto','Manual')
+df
+mtcars %>% mutate(TxType = ifelse(am==0, 'Auto', 'Manual')) %>% group_by(TxType) %>% summarise(count = n()) #mutate - temporarily creates a col doesn't store in db
+
+#mtcars %>% group_by(cyl,mpg) %>% summarise(count = n()) as.data.frame()
+#x <- 0 == x = 0
+
+df=mtcars
+df$mpg <- df$mpg+10
+df$mpg * 1.1
+df
+df %>% mutate(MGPWT = df$mpg+df$wt) #add mpg+wt into new col MGPWT
+df$mpg * df$wt
+df$MPGWT = df$mpg * 1.1 +df$wt #create new col
+head(df)
+df %>% group_by(gear) %>%  top_n(n=2, wt=mpg) %>%select(gear,mpg) # -mpg for bottom 2
+df %>% group_by(gear) %>%  arrange(-mpg) %>% select(gear,mpg)
+top_frac(df %>% group_by(gear), n=0.2, wt=mpg) %>%select(gear,mpg)
+
+#list out details of any two cars picked randomly; then do 20% and 25%
+sample_n(df, 2)
+sample_frac(df, 0.2)
+sample_frac(df, 0.25)
+df %>% sample_frac(0.25) %>% arrange(mpg)
+sort(df$mpg)
+df[order(df$mpg),]
+
+#find mean of mpg,hp,wt for each gear type
+df %>% group_by(gear) %>% summarise(mean(mpg), mean(wt), mean(hp))
+df %>% group_by(gear) %>% summarise_at(c('mpg', 'wt', 'hp','disp'),c(mean,median))
+df %>% select(gear,mpg,wt,hp,disp) %>% group_by(gear) %>% summarise_all(mean)
+
+#find min and max for wt for each gear type
+df %>% select(mpg,wt,gear) %>% group_by(gear) %>% summarise_each(c(min,max))
+
+#graphs----
+hist(df$mpg)
+barplot(table(df$gear),col=1:3)
+pie(table(df$gear))
+  L1<-paste(round(table(df$gear)/nrow(df) * 100),'%') #calculate %age
+  pie(table(df$gear), labels = L1, col=1:3)
+plot(df$wt,df$mpg)
+
+library(ggplot2)
+library(reshape2)
+
+(rollno = paste('IIM',1:10,sep='-'))
+(name =paste('sName',1:10,sep='-'))
+(gender = (sample(c('M','F'),size=10, replace=T)))
+(program =sample(c('BBA','MBA'), size=10, replace = T))
+(marketing = trunc(rnorm(10, mean=60, sd=10)))
+(finance= trunc(rnorm(10,mean=55,sd=12)))
+(operations= trunc(rnorm(10,mean=70,sd=5)))
+students <- data.frame(rollno, name,gender, program, marketing, finance,operations, stringsAsFactors = F)
+students
+head(students)
+students %>% group_by(program,gender) %>% summarise(FinMarks = mean(finance), MarkMarks = mean(marketing), OpMarks = mean(operations))
+
+
+(meltsum1 <- melt(students, id.vars=c('rollno', 'name','gender', 'program'), variable.name ='subject', value.name = 'marks')) #melt converts from length to wide format -- transpose
+meltsum1
+sum2 <- meltsum1 %>% group_by(program,gender,subject) %>% summarise(MeanMarks = mean(marks))
+?melt
+ggplot(data = sum2, aes(x=gender, y =MeanMarks, fill = gender)) + geom_bar(stat ='identity') + facet_grid(program ~ subject)
+
+head(students, n=2)
+students %>% group_by(gender) %>% summarise(count = n())
+ggplot(students %>% group_by(gender) %>% summarise(COUNT = n()), aes(x=gender, y=COUNT, fill=gender)) + geom_bar(stat = 'identity') + geom_text(aes(label=COUNT)) + labs(title='Gender-wise Data')
+ggplot(students, aes(x=gender, y=..count..)) + geom_bar(stat = 'count')
+
+ggplot(students %>% group_by(program, gender) %>% summarise(COUNT = n()), aes(x=gender, y=COUNT, fill=program)) + geom_bar(stat = 'identity') + geom_text(aes(label=COUNT)) + labs(title='Gender+Program-wise Data')
+
+ggplot(students %>% group_by(program, gender) %>% summarise(COUNT = n()), aes(x=gender, y=COUNT, fill=program)) + geom_bar(stat = 'identity', position=position_dodge(0.9)) + geom_text(aes(label=COUNT), position=position_dodge(0.9)) + labs(title='Gender+Program-wise Data')
+
+names(students)
+names(meltsum1)
+
+ggplot(meltsum1 %>% group_by(program, gender, subject) %>% summarise(meanMarks = round(mean(marks))), aes(x=gender, y=meanMarks, fill=program)) + geom_bar(stat = 'identity', position=position_dodge(0.9)) + geom_text(aes(label=meanMarks), position=position_dodge(0.9)) + labs(title='Subject-Gender-Program Mean Marks') +facet_grid(~subject)
+
+
+
+
+
+ggplot(mtcars, aes(x=wt, y=mpg, size=hp, color = factor(gear), shape = factor(am))) +geom_point()
+ggplot(students, aes(x=gender, y = ..count..)) + geom_bar(stat='count')
+
+(dcastsum1 <- dcast(meltsum1, rollno+name ~ varibale, value.var='value'))
