@@ -244,20 +244,70 @@ predict(prunetree2, newdata = testdata2, type='prob')
 #plot the graph
 #predict for new cases
 
-#rpart, CART, classification model
-#regression decision = predict numerical value eg sales
-© 2020 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
+#Clustering----
+
+library(factoextra)
+set.seed(1234)
+(marks1 = trunc(rnorm(n=30, mean=70, sd=8)))
+(marks2 = trunc(rnorm(n=30, mean=120, sd=10)))
+
+sum(marks1)
+df5 <- data.frame(marks1=marks1)
+df6 <- data.frame(marks1,marks2)
+head(df5)
+head(df6)
+
+km3 <- kmeans(df5, centers=3)
+attributes(km3)
+km3$cluster
+km3$centers
+km3$size
+sort(df5$marks1)
+cbind(df5, km3$cluster) # which row which cluster
+df5$cluster = km3$cluster
+head(df5)
+df5 %>% arrange(cluster)
+dist(df5[1:5,])
+
+km3B <- kmeans(df6, centers=5) #center - no. of clusters
+attributes(km3B)
+km3B$cluster
+km3B$centers
+km3B$size
+cbind(df6, km3B$cluster) # which row which cluster
+df6$cluster = km3B$cluster
+head(df6)
+df6 %>% arrange(cluster)
+dist(df6[1:5,])
+plot(df6$marks1, df6$marks2, col=df6$cluster)
+
+#scale data and then do clustering
+df6B <- scale(df6[, c('marks1','marks2')])
+head(df6B)
+
+km3B <- kmeans(df6B, centers=5) #center - no. of clusters
+attributes(km3B)
+km3B$cluster
+km3B$centers
+km3B$size
+cbind(df6B, km3B$cluster) # which row which cluster
+head(df6)
+df6B$newcluster = km3B$cluster
+
+plot(df6$marks1, df6$marks2, col=df6$cluster)
+plot(df6$marks1, df6$marks2, col=df6B$cluster)
 
 
+#WOrdCloud----
+library(wordcloud2)
+df = data.frame(word=c('iit','mdi','iim','imt'), freq=c(17,20,23,15))
+df
+par(mar=c(0,0,0,0))
+wordcloud2(df)
 
+head(demoFreq)
+dim(demoFreq)
+par(mar=c(0,0,0,0))
+wordcloud2(demoFreq)
+
+par(mar=c(0,0,0,0))
